@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flood Detection System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Flood Detection Logo" class="logo">
+            <h1>Flood Detection System</h1>
+            <p>Upload an image to detect if it contains flood conditions</p>
+        </header>
+        
+        <div class="upload-container">
+            <form method="POST" enctype="multipart/form-data">
+                <div class="upload-area">
+                    <input type="file" name="file" id="file" accept="image/*" required>
+                    <label for="file" class="upload-label">
+                        <span class="upload-icon">+</span>
+                        <span class="upload-text">Choose an image or drag it here</span>
+                    </label>
+                </div>
+                <button type="submit" class="submit-btn">Analyze Image</button>
+            </form>
+        </div>
+        
+        <div class="info-section">
+            <h2>How It Works</h2>
+            <ol>
+                <li>Upload a satellite or aerial image of an area</li>
+                <li>Our AI model will analyze the image</li>
+                <li>Get instant results showing flood detection</li>
+            </ol>
+            
+            <h2>Tips for Best Results</h2>
+            <ul>
+                <li>Use clear, high-quality images</li>
+                <li>Images should show landscape/terrain</li>
+                <li>Avoid images with heavy obstructions</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flood Detection Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Flood Detection Logo" class="logo">
+            <h1>Flood Detection Results</h1>
+        </header>
+        
+        <div class="results-container">
+            <div class="image-preview">
+                <img src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Uploaded Image">
+            </div>
+            
+            <div class="prediction-result">
+                <h2>Analysis Result</h2>
+                
+                <div class="result-box {% if label == 'Flooded' %}flooded{% else %}normal{% endif %}">
+                    <span class="result-label">{{ label }}</span>
+                    <span class="confidence">Confidence: {{ confidence }}</span>
+                </div>
+                
+                <div class="result-explanation">
+                    {% if label == 'Flooded' %}
+                        <p>The model has detected signs of flooding in this image with {{ confidence }} confidence.</p>
+                        <p>Please take appropriate safety measures if this is a current situation.</p>
+                    {% else %}
+                        <p>The model has detected no signs of flooding in this image with {{ confidence }} confidence.</p>
+                        <p>This area appears to have normal conditions.</p>
+                    {% endif %}
+                </div>
+                
+                <a href="{{ url_for('index') }}" class="back-btn">Analyze Another Image</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
