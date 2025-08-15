@@ -4,41 +4,365 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flood Detection Results</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .image-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .uploaded-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+        }
+
+        .image-info {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .results-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid;
+        }
+
+        .result-card.success {
+            border-left-color: #28a745;
+        }
+
+        .result-card.warning {
+            border-left-color: #ffc107;
+        }
+
+        .result-card.danger {
+            border-left-color: #dc3545;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .result-icon {
+            font-size: 2.5em;
+            margin-right: 15px;
+        }
+
+        .result-title {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .result-subtitle {
+            color: #666;
+            font-size: 1em;
+        }
+
+        .confidence-bar {
+            background: #e9ecef;
+            height: 25px;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            border-radius: 12px;
+            transition: width 1s ease-in-out;
+        }
+
+        .confidence-fill.warning {
+            background: linear-gradient(90deg, #ffc107, #ffca2c);
+        }
+
+        .confidence-fill.danger {
+            background: linear-gradient(90deg, #dc3545, #e55563);
+        }
+
+        .confidence-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: 600;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .detail-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .detail-value {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .detail-label {
+            color: #666;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .recommendations {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .recommendations h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .recommendations h3::before {
+            content: "💡";
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .recommendation-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .recommendation-list li {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            border-left: 3px solid #3498db;
+        }
+
+        .timestamp {
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .animate-in {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideIn 0.6s ease-out forwards;
+        }
+
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .results-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Flood Detection Logo" class="logo">
-            <h1>Flood Detection Results</h1>
-        </header>
-        
-        <div class="results-container">
-            <div class="image-preview">
-                <img src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Uploaded Image">
+        <div class="header">
+            <a href="{{ url_for('index') }}" class="back-btn">← Back to Upload</a>
+            <h1>🌊 Flood Detection Results</h1>
+        </div>
+
+        <div class="results-grid">
+            <div class="image-section animate-in">
+                <h3>Analyzed Image</h3>
+                <img src="{{ url_for('uploaded_file', filename=filename) }}" alt="Uploaded Image" class="uploaded-image">
+                <div class="image-info">
+                    <strong>Filename:</strong> {{ filename }}<br>
+                    <strong>Analysis completed:</strong> <span id="timestamp"></span>
+                </div>
             </div>
-            
-            <div class="prediction-result">
-                <h2>Analysis Result</h2>
-                
-                <div class="result-box {% if label == 'Flooded' %}flooded{% else %}normal{% endif %}">
-                    <span class="result-label">{{ label }}</span>
-                    <span class="confidence">Confidence: {{ confidence }}</span>
+
+            <div class="results-section animate-in" style="animation-delay: 0.2s">
+                <div class="result-card {{ color_class }}">
+                    <div class="result-header">
+                        <div class="result-icon">
+                            {% if label == 'Flooded' %}
+                                🌊
+                            {% else %}
+                                ✅
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div class="result-title">{{ label }}</div>
+                            <div class="result-subtitle">AI Detection Result</div>
+                        </div>
+                    </div>
+
+                    <div class="confidence-bar">
+                        <div class="confidence-fill {{ color_class }}" style="width: {{ (confidence * 100)|round|int }}%">
+                        </div>
+                        <div class="confidence-text">{{ (confidence * 100)|round(1) }}% Confidence</div>
+                    </div>
+
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <div class="detail-value">{{ risk_level }}</div>
+                            <div class="detail-label">Risk Level</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-value">{{ (confidence * 100)|round(1) }}%</div>
+                            <div class="detail-label">Confidence</div>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="result-explanation">
-                    {% if label == 'Flooded' %}
-                        <p>The model has detected signs of flooding in this image with {{ confidence }} confidence.</p>
-                        <p>Please take appropriate safety measures if this is a current situation.</p>
-                    {% else %}
-                        <p>The model has detected no signs of flooding in this image with {{ confidence }} confidence.</p>
-                        <p>This area appears to have normal conditions.</p>
-                    {% endif %}
-                </div>
-                
-                <a href="{{ url_for('index') }}" class="back-btn">Analyze Another Image</a>
             </div>
         </div>
+
+        <div class="recommendations animate-in" style="animation-delay: 0.4s">
+            <h3>Recommendations & Actions</h3>
+            <ul class="recommendation-list">
+                {% if label == 'Flooded' %}
+                    {% if confidence > 0.9 %}
+                        <li><strong>High Risk Area:</strong> Immediate evacuation may be necessary. Contact local emergency services.</li>
+                        <li><strong>Infrastructure:</strong> Check for damage to roads, bridges, and buildings in the area.</li>
+                        <li><strong>Safety:</strong> Avoid traveling through or near the detected flood zone.</li>
+                        <li><strong>Monitoring:</strong> Continue monitoring water levels and weather conditions.</li>
+                    {% else %}
+                        <li><strong>Potential Flooding:</strong> Monitor the situation closely and prepare for possible evacuation.</li>
+                        <li><strong>Precautions:</strong> Move valuable items to higher ground as a precaution.</li>
+                        <li><strong>Communication:</strong> Stay in contact with local authorities and emergency services.</li>
+                    {% endif %}
+                {% else %}
+                    <li><strong>Normal Conditions:</strong> No immediate flood risk detected in this area.</li>
+                    <li><strong>Continued Monitoring:</strong> Keep monitoring weather conditions, especially during heavy rainfall.</li>
+                    <li><strong>Preparedness:</strong> Maintain emergency supplies and evacuation plans as standard practice.</li>
+                    <li><strong>Community:</strong> Share flood preparedness information with neighbors and local community.</li>
+                {% endif %}
+            </ul>
+        </div>
+
+        <div class="timestamp">
+            Analysis completed on <span id="full-timestamp"></span> using AI Flood Detection System v2.1
+        </div>
     </div>
+
+    <script>
+        // Set timestamps
+        const now = new Date();
+        document.getElementById('timestamp').textContent = now.toLocaleTimeString();
+        document.getElementById('full-timestamp').textContent = now.toLocaleString();
+
+        // Add staggered animations
+        const animatedElements = document.querySelectorAll('.animate-in');
+        animatedElements.forEach((el, index) => {
+            setTimeout(() => {
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+            }, index * 200);
+        });
+
+        // Animate confidence bar
+        setTimeout(() => {
+            const confidenceFill = document.querySelector('.confidence-fill');
+            const targetWidth = confidenceFill.style.width;
+            confidenceFill.style.width = '0%';
+            setTimeout(() => {
+                confidenceFill.style.width = targetWidth;
+            }, 500);
+        }, 800);
+    </script>
 </body>
 </html>

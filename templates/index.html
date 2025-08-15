@@ -4,44 +4,310 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flood Detection System</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: white;
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        header p {
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+
+        .upload-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
+            border: 2px dashed #dee2e6;
+            transition: all 0.3s ease;
+        }
+
+        .upload-container:hover {
+            border-color: #3498db;
+            background: #ebf3fd;
+        }
+
+        .upload-area {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        #file {
+            opacity: 0;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .upload-label {
+            display: block;
+            text-align: center;
+            padding: 60px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .upload-label:hover {
+            background: rgba(52, 152, 219, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #3498db;
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 1.2em;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .info-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .info-section h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        .info-section ol, .info-section ul {
+            padding-left: 20px;
+        }
+
+        .info-section li {
+            margin-bottom: 8px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .error {
+            background: #fff5f5;
+            color: #e53e3e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #e53e3e;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .info-section {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Flood Detection Logo" class="logo">
-            <h1>Flood Detection System</h1>
-            <p>Upload an image to detect if it contains flood conditions</p>
+            <div class="logo">🌊</div>
+            <h1>AI Flood Detection System</h1>
+            <p>Upload satellite or aerial images to detect flood conditions using advanced AI</p>
         </header>
         
+        {% if error %}
+            <div class="error">
+                <strong>Error:</strong> {{ error }}
+            </div>
+        {% endif %}
+        
         <div class="upload-container">
-            <form method="POST" enctype="multipart/form-data">
+            <form method="POST" enctype="multipart/form-data" id="uploadForm">
                 <div class="upload-area">
                     <input type="file" name="file" id="file" accept="image/*" required>
                     <label for="file" class="upload-label">
-                        <span class="upload-icon">+</span>
+                        <span class="upload-icon">📤</span>
                         <span class="upload-text">Choose an image or drag it here</span>
+                        <small style="display: block; margin-top: 10px; color: #666;">
+                            Supported formats: JPG, PNG, GIF, BMP (Max 16MB)
+                        </small>
                     </label>
                 </div>
-                <button type="submit" class="submit-btn">Analyze Image</button>
+                <button type="submit" class="submit-btn">🔍 Analyze Image for Flood Detection</button>
             </form>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing image with AI model...</p>
+                <small>This may take a few moments</small>
+            </div>
         </div>
         
         <div class="info-section">
-            <h2>How It Works</h2>
-            <ol>
-                <li>Upload a satellite or aerial image of an area</li>
-                <li>Our AI model will analyze the image</li>
-                <li>Get instant results showing flood detection</li>
-            </ol>
+            <div>
+                <h2>🚀 How It Works</h2>
+                <ol>
+                    <li><strong>Upload Image:</strong> Select a satellite or aerial image of any area</li>
+                    <li><strong>AI Analysis:</strong> Our trained model analyzes the image for flood patterns</li>
+                    <li><strong>Get Results:</strong> Receive instant flood detection results with confidence scores</li>
+                    <li><strong>Risk Assessment:</strong> View detailed risk levels and recommendations</li>
+                </ol>
+            </div>
             
-            <h2>Tips for Best Results</h2>
-            <ul>
-                <li>Use clear, high-quality images</li>
-                <li>Images should show landscape/terrain</li>
-                <li>Avoid images with heavy obstructions</li>
-            </ul>
+            <div>
+                <h2>💡 Tips for Best Results</h2>
+                <ul>
+                    <li><strong>Image Quality:</strong> Use clear, high-resolution images</li>
+                    <li><strong>Coverage Area:</strong> Images should show landscape/terrain views</li>
+                    <li><strong>Lighting:</strong> Daylight images work best for detection</li>
+                    <li><strong>Avoid:</strong> Images with heavy cloud cover or obstructions</li>
+                </ul>
+            </div>
         </div>
     </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            const fileInput = document.getElementById('file');
+            const uploadContainer = document.querySelector('.upload-container');
+            const loading = document.getElementById('loading');
+            
+            if (fileInput.files.length > 0) {
+                uploadContainer.style.display = 'none';
+                loading.style.display = 'block';
+            }
+        });
+
+        // File drag and drop functionality
+        const uploadArea = document.querySelector('.upload-area');
+        const fileInput = document.getElementById('file');
+        const uploadText = document.querySelector('.upload-text');
+        const originalText = uploadText.textContent;
+
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadArea.style.background = 'rgba(52, 152, 219, 0.1)';
+            uploadText.textContent = 'Drop your image here!';
+        });
+
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadArea.style.background = '';
+            uploadText.textContent = originalText;
+        });
+
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadArea.style.background = '';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                uploadText.textContent = `Selected: ${files[0].name}`;
+            }
+        });
+
+        fileInput.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                uploadText.textContent = `Selected: ${e.target.files[0].name}`;
+            } else {
+                uploadText.textContent = originalText;
+            }
+        });
+    </script>
 </body>
 </html>
